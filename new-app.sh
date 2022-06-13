@@ -15,14 +15,15 @@ done
 read -rp "app 信息：" intro
 
 content="//t $intro
-app $app_name
+package main
 
 "
 
 # 创建目录与文件
 (mkdir ./$app_name && cd $app_name && \
-echo -e "$content" > ./${app_name}.go
-echo -e "$content" > ./${app_name}_test.go
+go mod init app/${app_name}&& \
+echo -e "$content" > ./main.go
+echo -e "$content" > ./main_test.go
 echo -e "# ${app_name} \n ${intro}" > ./README.md)
 
 echo -e "\n[${app_name}](${github_repository_url}/${app_name}) ${intro}">> ./README.md

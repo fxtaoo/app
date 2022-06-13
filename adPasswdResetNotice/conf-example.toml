@@ -1,0 +1,17 @@
+[smtp]
+# smtp 地址端口
+Host   = ""
+Port   =
+# 发送邮件邮箱账号密码
+User   = ""
+UserPW = ""
+
+[ad]
+# 域控密码最大天数
+MxPasswordAge = 120
+# 域控账号邮箱后缀
+MailDomain = "@xxxx.com"
+# 用户到期邮件内容
+MailContent =''
+# 接收域控邮件提醒统计邮件地址
+AdminMail = [""]
