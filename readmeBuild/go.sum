@@ -1,0 +1,4 @@
+github.com/BurntSushi/toml v1.1.0 h1:ksErzDEI1khOiGPgpwuI7x2ebx/uXQNw7xJpn9Eq1+I=
+github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
+github.com/fxtaoo/golib v0.0.0-20220613125232-f57e2c5ba10a h1:UurJG5yDLgOWqc4RUSeza94t2icqJSbU3zZWn5MeywQ=
+github.com/fxtaoo/golib v0.0.0-20220613125232-f57e2c5ba10a/go.mod h1:eDlFZzYpOgdDORmdIrC9vjBwaxR/jgqJ+g80R82bTLw=
