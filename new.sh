@@ -26,7 +26,7 @@ echo -e "$content" > ./main.go
 echo -e "$content" > ./main_test.go
 echo -e "# ${app_name} \n ${intro}" > ./README.md)
 
-echo -e "\n[${app_name}](${github_repository_url}/${app_name}) ${intro}">> ./README.md
+echo -e "| [${app_name}](${github_repository_url}/${app_name}) | ${intro} |">> ./README.md
 
 
 
