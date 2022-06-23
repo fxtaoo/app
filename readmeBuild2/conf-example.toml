@@ -1,0 +1,6 @@
+[Info]
+TopPageInfo = "# cmd\n一些 shell 脚本  \nfxtaooRaw 为 Cloudflare CDN Github Raw"
+CodeURL = "https://github.com/fxtaoo/cmd/blob/master/"
+GithubRaw = "https://raw.githubusercontent.com/fxtaoo/cmd/master/"
+FxtaooRaw = "https://raw.fxtaoo.dev/fxtaoo/cmd/master/"
+DirInfo = [["func", "函数"],["sys", "系统"],["install", "安装"],["other","其他"]]
