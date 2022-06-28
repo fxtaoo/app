@@ -2,25 +2,17 @@
 package main
 
 import (
-	"strconv"
+	"fmt"
 	"sync"
 	"time"
 
-	"github.com/fxtaoo/golib/goemail"
 	"github.com/fxtaoo/golib/gofile"
+	"github.com/fxtaoo/golib/gomail"
+	"github.com/fxtaoo/golib/monitor"
 	"github.com/robfig/cron/v3"
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/host"
-	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/net"
 )
-
-// 告警
-type Warn struct {
-	name    string // 什么告警
-	content string // 告警内容
-}
 
 // 配置
 type MonitorConfig struct {
@@ -32,100 +24,34 @@ type MonitorConfig struct {
 
 type Config struct {
 	Monitor MonitorConfig
+	Smtp    gomail.Smtp
 }
 
-// CPU 高负载持续 60 秒 告警
-// 每 10 秒取样一次
-// 使用 num 警告比例
-func cpuUsage(num float64) Warn {
-	var warn Warn
-	var tfList [6]bool
+func checkSendMail(conf *Config, warnList []monitor.Warn, checkList []func(float64) (*monitor.Warn, error), maxNumList []float64) {
 
-	for i := range tfList {
-		v, _ := cpu.Percent(10*time.Millisecond, false)
-		if v[0] > num {
-			tfList[i] = true
-		} else {
-			tfList[i] = false
+	var warnContent string
+
+	for i := range warnList {
+		update, err := warnList[i].Check(checkList[i], maxNumList[i], conf.Monitor.NotifyIntervalTime)
+		if err != nil {
+			fmt.Println(err)
+			continue
 		}
-		time.Sleep(10 * time.Second)
-	}
-
-	for _, e := range tfList {
-		if !e {
-			return warn
+		if update {
+			warnContent += warnList[i].Content + "<br>"
 		}
 	}
-	warn = Warn{"cpu", "使用率超过 " + strconv.FormatFloat(num, 'g', 2, 64) + "% 持续一分钟"}
-	return warn
-}
 
-// 内存告警
-// 使用 num 警告比例
-func numUsage(num float64) Warn {
-	var warn Warn
-	v, _ := mem.VirtualMemory()
-	used := 100 - float64(v.Available)/float64(v.Total)*100
-	if used > num {
-		warn = Warn{"内存", "使用率超过 " + strconv.FormatFloat(num, 'g', 2, 64) + "%"}
-		return warn
-	} else {
-		return warn
-	}
-}
+	// 发送邮件
+	if warnContent != "" {
+		// 服务器信息
+		hostname, _ := host.Info()
+		ip, _ := net.Interfaces()
+		outPut := fmt.Sprintf("%s<br>服务器 %s IP %s<br>%s", time.Now().Format("2006-01-02 15:04:05"), hostname.Hostname, ip[1].Addrs[0].Addr, warnContent)
 
-// 磁盘告警
-// 使用 num 警告比例
-func diskUsage(num float64) Warn {
-	var warn Warn
-	isnum := 0
-	partitions, _ := disk.Partitions(false)
-	for _, e := range partitions {
-		info, _ := disk.Usage(e.Mountpoint)
-		used := float64(info.Used) / float64(info.Total) * 100
-		if used > num {
-			warn = Warn{e.Device, "使用率超过 " + strconv.FormatFloat(num, 'g', 2, 64) + "%"}
-			isnum++
-		}
-	}
-	if isnum > 0 {
-		return warn
-	} else {
-		return warn
-	}
-}
+		mail := gomail.Mail{Subject: "磁盘 | 内存 | CPU 报警", Body: outPut}
 
-func checkSendMail(conf Config, sortList []string, lastSendEmailTime map[string]time.Time) {
-
-	funcList := []Warn{cpuUsage(conf.Monitor.MaxiMumCPU), numUsage(conf.Monitor.MaxiMumNUM), diskUsage(conf.Monitor.MaxiMumDisk)}
-	monitorSort := make(map[string]Warn)
-
-	for i, e := range sortList {
-		monitorSort[e] = funcList[i]
-	}
-
-	// 服务器信息
-	nowTime := time.Now()
-	logs := nowTime.Format("2006-01-02 15:04:05")
-	hostname, _ := host.Info()
-	logs += "  服务器 " + hostname.Hostname
-
-	ip, _ := net.Interfaces()
-	logs += "  IP " + ip[1].Addrs[0].Addr + "\n"
-
-	// 只要有一项满足即发邮件
-	onoff := false
-	for sort, warn := range monitorSort {
-		if warn.content != "" && (lastSendEmailTime[sort].IsZero() || nowTime.Sub(lastSendEmailTime[sort]).Minutes() > conf.Monitor.NotifyIntervalTime) {
-			logs += "\n" + warn.name + " " + warn.content
-			lastSendEmailTime[sort] = nowTime
-			onoff = true
-		}
-	}
-	if onoff {
-		for _, e := range conf.Monitor.NotifyMailList {
-			goemail.SendEmail(ConfigFile, e, "磁盘 | 内存 | CPU 报警", logs)
-		}
+		gomail.SendEmailMP(&conf.Smtp, &mail, conf.Monitor.NotifyMailList)
 	}
 
 }
@@ -133,23 +59,19 @@ func checkSendMail(conf Config, sortList []string, lastSendEmailTime map[string]
 const ConfigFile = "conf.toml"
 
 func main() {
-
 	var conf Config
 	gofile.TomlFileRead(ConfigFile, &conf)
 
-	// 最后一次邮件发送时间
-	lastSendEmailTime := make(map[string]time.Time)
-	sortList := []string{"cpu", "num", "disk"}
-
-	for _, e := range sortList {
-		lastSendEmailTime[e] = time.Time{}
-	}
+	// 顺序为 cpu 内存 磁盘，有对应关系
+	warnList := []monitor.Warn{{Time: time.Now()}, {Time: time.Now()}, {Time: time.Now()}}
+	checkList := []func(float64) (*monitor.Warn, error){monitor.CpuUsage, monitor.NumUsage, monitor.DiskUsage}
+	maxNumList := []float64{conf.Monitor.MaxiMumCPU, conf.Monitor.MaxiMumNUM, conf.Monitor.MaxiMumDisk}
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	c := cron.New()
-	c.AddFunc(conf.Monitor.RepeatTime, func() { checkSendMail(conf, sortList, lastSendEmailTime) })
+	c.AddFunc(conf.Monitor.RepeatTime, func() { checkSendMail(&conf, warnList, checkList, maxNumList) })
 	c.Start()
 
 	wg.Wait()
