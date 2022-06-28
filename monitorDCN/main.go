@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"sync"
 	"time"
@@ -56,11 +57,13 @@ func checkSendMail(conf *Config, warnList []monitor.Warn, checkList []func(float
 
 }
 
-const ConfigFile = "conf.toml"
-
 func main() {
+
+	configFile := flag.String("conf", "conf.toml", "配置文件名（当前目录）或绝对路径")
+	flag.Parse()
+
 	var conf Config
-	gofile.TomlFileRead(ConfigFile, &conf)
+	gofile.TomlFileRead(*configFile, &conf)
 
 	// 顺序为 cpu 内存 磁盘，有对应关系
 	warnList := []monitor.Warn{{Time: time.Now()}, {Time: time.Now()}, {Time: time.Now()}}

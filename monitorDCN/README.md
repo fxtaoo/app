@@ -3,7 +3,7 @@
 
 ## 配置
 
-配置从同文件夹 conf.toml 读取  
+配置默认从同目录 conf.toml 读取，否则使用 `-conf` 指定 toml 文件绝对路径  
 配置参考示例 conf-example.toml  
 
 ## 功能
