@@ -3,7 +3,7 @@ module app/adPasswdResetNotice
 go 1.18
 
 require (
-	github.com/fxtaoo/golib v0.0.0-20220613125232-f57e2c5ba10a
+	github.com/fxtaoo/golib v0.0.0-20220628061539-2fb9d1266539
 	github.com/go-cmd/cmd v1.4.1
 	github.com/robfig/cron/v3 v3.0.1
 )

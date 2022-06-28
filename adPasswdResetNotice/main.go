@@ -1,8 +1,9 @@
-// AD 域用户密码到期邮件提醒
+// AD 域用户密码到期邮件提醒gomail
 
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -12,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fxtaoo/golib/goemail"
 	"github.com/fxtaoo/golib/gofile"
+	"github.com/fxtaoo/golib/gomail"
 	"github.com/go-cmd/cmd"
 	"github.com/robfig/cron/v3"
 )
@@ -31,7 +32,8 @@ type ADConfig struct {
 }
 
 type Config struct {
-	AD ADConfig
+	AD   ADConfig
+	Stmp gomail.Smtp
 }
 
 func sendAdmailCount(userList *[]string, content *string, sort string) {
@@ -42,15 +44,11 @@ func sendAdmailCount(userList *[]string, content *string, sort string) {
 }
 
 // 读数据发送邮件
-func readDataSendMail(logFile *os.File) {
+func readDataSendMail(conf *Config, logFile *os.File, email *gomail.Mail, stmp *gomail.Smtp) {
 	mw := io.MultiWriter(os.Stdout, logFile)
 
 	log.SetOutput(mw)
 	log.Println("\n" + time.Now().Format("2006-01-02 15:04:05"))
-
-	// 配置
-	var conf Config
-	gofile.TomlFileRead(ConfigFileName, &conf)
 
 	// 从域控生成数据
 	cmd := cmd.NewCmd("powershell.exe", filepath.Join(filepath.Dir(os.Args[0]), PowerShellFileName))
@@ -65,14 +63,14 @@ func readDataSendMail(logFile *os.File) {
 
 	// 用户数据
 	var userList []User
-	csvdata := gofile.CSVFileRead(UserDataFileName)
+	csvdata, _ := gofile.CSVFileRead(UserDataFileName)
 	for _, row := range csvdata {
 		userList = append(userList, User{row[0], strings.Split(row[1], " ")[0], row[2]})
 	}
 
 	// 排除用户
 	var excludeUser []string
-	csvdata = gofile.CSVFileRead(ExcludeUserFileName)
+	csvdata, _ = gofile.CSVFileRead(ExcludeUserFileName)
 	for _, row := range csvdata {
 		excludeUser = append(excludeUser, row[0])
 	}
@@ -101,13 +99,15 @@ func readDataSendMail(logFile *os.File) {
 
 		if dateInterval < 0 {
 			// 密码以过期
-			expiredUser = append(expiredUser, user.email+" "+user.name+" 以过期 "+strconv.Itoa(dateInterval)[1:]+" 天 <br>")
+			expiredUser = append(expiredUser, fmt.Sprintf("%s %s 以过期 %d 天 <br>", user.email, user.name, dateInterval*-1))
 		} else {
-			if error := goemail.SendEmail(ConfigFileName, user.email+conf.AD.MailDomain, "人事 VPN 密码到期提醒", "<strong>人事 VPN 密码还有 "+strconv.Itoa(dateInterval)+" 天到期！请尽快按提示重置密码！</strong>"+conf.AD.MailContent, filepath.Join(filepath.Dir(os.Args[0]), "nopush-example.png")); error != nil {
+			email.To = user.email
+			email.Body = fmt.Sprintf("<strong>人事 VPN 密码还有 %d 天到期！请尽快按提示重置密码<br>%s", dateInterval, conf.AD.MailContent)
+			if error := gomail.SendEmail(stmp, email); error != nil {
 				falseSendMail = append(falseSendMail, user.email+" "+user.name+" 还有 "+strconv.Itoa(dateInterval)+" 天到期 <br>")
 				log.Println(user.email + conf.AD.MailDomain + " 通知邮件发送失败！")
 			} else {
-				trueSendMail = append(trueSendMail, user.email+" "+user.name+" 还有 "+strconv.Itoa(dateInterval)+" 天到期 <br>")
+				trueSendMail = append(trueSendMail, fmt.Sprintf("%s %s 还有 %s 天到期 <br>", user.email, user.name, strconv.Itoa(dateInterval)))
 				log.Println(user.email + conf.AD.MailDomain + " 通知邮件发送成功！")
 			}
 		}
@@ -119,10 +119,14 @@ func readDataSendMail(logFile *os.File) {
 	sendAdmailCount(&trueSendMail, &admailContent, "<br><strong>提醒邮件发送成功用户名:</strong><br>")
 
 	// 域控邮件提醒统计
-	for _, e := range conf.AD.AdminMail {
-		goemail.SendEmail(ConfigFileName, e, "今日域控邮件提醒统计", admailContent)
-		time.Sleep(3 * time.Second)
-		log.Println(e + " 今日域控邮件提醒统计邮件发送成功！")
+	email.Subject = "今日域控邮件提醒统计"
+	email.Body = admailContent
+	if err := gomail.SendEmailMP(stmp, email, conf.AD.AdminMail); err != nil {
+		log.Println("域控邮件提醒统计发送失败！")
+	} else {
+		for range err {
+			log.Println(email.To + "域控邮件提醒统计发送失败！")
+		}
 	}
 }
 
@@ -143,11 +147,20 @@ func main() {
 	}
 	defer logFile.Close()
 
+	// 配置
+	var conf Config
+	gofile.TomlFileRead(ConfigFileName, &conf)
+
+	var email gomail.Mail
+	var stmp gomail.Smtp
+	email.Subject = "AD 域用户密码到期邮件提醒"
+	email.AttachPath = filepath.Join(filepath.Dir(os.Args[0]), "nopush-example.png")
+
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	c := cron.New()
-	c.AddFunc("0 9 * * *", func() { readDataSendMail(logFile) })
+	c.AddFunc("0 9 * * *", func() { readDataSendMail(&conf, logFile, &email, &stmp) })
 	c.Start()
 
 	wg.Wait()
