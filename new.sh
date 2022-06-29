@@ -14,7 +14,7 @@ done
 
 read -rp "app 信息：" intro
 
-content="//t $intro
+content="// $intro
 package main
 
 "
