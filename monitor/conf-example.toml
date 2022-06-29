@@ -14,8 +14,8 @@ NotifyMailList = []
 # 同类型事件告警邮件间隔分钟
 NotifyIntervalTime= 60
 # 执行周期预设配置参考 https://pkg.go.dev/github.com/robfig/cron/v3#hdr-Predefined_schedules
-# RepeatTime 应大于 10 分钟
-RepeatTime = "@every 10m"
+# RepeatTime 至少 3 分钟
+RepeatTime = "@every 3m"
 # cpu 最大使用率
 MaxiMumCPU = 90
 # 内存 最大使用率

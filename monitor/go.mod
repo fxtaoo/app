@@ -3,7 +3,7 @@ module app/monitor
 go 1.18
 
 require (
-	github.com/fxtaoo/golib v0.0.0-20220629122410-a4968a7c7de4
+	github.com/fxtaoo/golib v0.0.0-20220629134902-678f5c5151ee
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v3 v3.22.5
 )
