@@ -7,7 +7,7 @@ User   = ""
 UserPW = ""
 
 [CPUNumDisk]
-# 日志绝对路径
+# 日志绝对路径（缺省执行文件同目录下 monitor.log）
 LogPath = ""
 # 告警通知邮箱
 NotifyMailList = []
@@ -32,4 +32,16 @@ LogPath = ""
 NotifyMailList = []
 # 执行周期预设配置参考 https://pkg.go.dev/github.com/robfig/cron/v3#hdr-Predefined_schedules
 RepeatTime = "@every 1m"
+
+[StartProcess]
+# 是否启用
+ONOFF = true
+# 日志绝对路径（缺省执行文件同目录下 monitor.log）
+LogPath = ""
+# 告警通知邮箱
+NotifyMailList = []
+# 执行周期预设配置参考 https://pkg.go.dev/github.com/robfig/cron/v3#hdr-Predefined_schedules
+RepeatTime = "@every 10s"
+# ['执行文件' '2>&1 重定向文件目录（缺省执行文件同目录下 monitorNohup.out）']
+ProcessList=[[]]
 

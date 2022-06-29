@@ -34,10 +34,19 @@ type RestartStopContainer struct {
 	ONOFF          bool     // 是否开启
 }
 
+type StartProcess struct {
+	LogPath        string     // 日志绝对路径
+	RepeatTime     string     // 执行周期
+	NotifyMailList []string   // 邮件通知列表
+	ONOFF          bool       // 是否开启
+	ProcessList    [][]string // 进程列表
+}
+
 type Config struct {
 	CPUNumDisk           CPUNumDisk
 	Smtp                 gomail.Smtp
 	RestartStopContainer RestartStopContainer
+	StartProcess         StartProcess
 }
 
 func main() {
@@ -55,6 +64,10 @@ func main() {
 
 	if conf.RestartStopContainer.ONOFF {
 		go checkRestartStopContainer(&conf)
+	}
+
+	if conf.StartProcess.ONOFF {
+		go checkStartProcess(&conf)
 	}
 
 	wg.Wait()
@@ -77,7 +90,7 @@ func sendEmailWriteLog(smtp *gomail.Smtp, subject, content string, mailList []st
 	gomail.SendEmailMP(smtp, &mail, mailList)
 
 	// 写日志
-	gofile.AppendFile(*logPath, fmt.Sprintf("%s\n%s", time.Now().Format("2006-01-02 15:04:05"), strings.ReplaceAll(content, "<br>", "\n")))
+	gofile.AppendFile(*logPath, fmt.Sprintf("%s %s", time.Now().Format("2006-01-02 15:04:05"), strings.ReplaceAll(content, "<br>", "\n")))
 }
 
 // 检查 CPU、磁盘、内存,超出设置比例发送邮件
@@ -126,6 +139,24 @@ func checkRestartStopContainer(conf *Config) {
 		}
 		if result != "" {
 			sendEmailWriteLog(&conf.Smtp, "容器重启告警", strings.ReplaceAll(result, "\n", "<br>"), conf.RestartStopContainer.NotifyMailList, &conf.RestartStopContainer.LogPath)
+		}
+	})
+	c.Start()
+}
+
+// 检查并启动进程
+func checkStartProcess(conf *Config) {
+	c := cron.New()
+	c.AddFunc(conf.StartProcess.RepeatTime, func() {
+		for _, e := range conf.StartProcess.ProcessList {
+			result, err := monitor.StartProcess(e[0], e[1])
+			if err != nil {
+				gofile.AppendFile(conf.StartProcess.LogPath, err.Error())
+				return
+			}
+			if result != "" {
+				sendEmailWriteLog(&conf.Smtp, "进程启动告警", strings.ReplaceAll(result, "\n", "<br>"), conf.StartProcess.NotifyMailList, &conf.StartProcess.LogPath)
+			}
 		}
 	})
 	c.Start()

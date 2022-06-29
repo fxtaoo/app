@@ -4,6 +4,8 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fxtaoo/golib v0.0.0-20220629115036-20516c6c7b5d h1:A1MscyMG9v07eJQKNUXQcSTsDjr9NhQ6zd1vK7A52Zg=
 github.com/fxtaoo/golib v0.0.0-20220629115036-20516c6c7b5d/go.mod h1:lb4CC3qsxj5TzYclwjoF1SmbunKhL9t36Oek0gjcX4I=
+github.com/fxtaoo/golib v0.0.0-20220629122410-a4968a7c7de4 h1:bVBykFiHkivLLcD5q37yvvhQEyNh4HRq0XeDPwtfDWM=
+github.com/fxtaoo/golib v0.0.0-20220629122410-a4968a7c7de4/go.mod h1:lb4CC3qsxj5TzYclwjoF1SmbunKhL9t36Oek0gjcX4I=
 github.com/go-ole/go-ole v1.2.6 h1:/Fpf6oFPoeFik9ty7siob0G6Ke8QvQEuVcuChpwXzpY=
 github.com/go-ole/go-ole v1.2.6/go.mod h1:pprOEPIfldk/42T2oK7lQ4v4JSDwmV0As9GaiUsvbm0=
 github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
