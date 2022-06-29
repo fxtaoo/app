@@ -1,0 +1,8 @@
+[smtp]
+# 发送 smtp 地址端口
+Host   = ""
+Port   =
+# 发送邮件邮箱账号密码
+User   = ""
+UserPW = ""
+
