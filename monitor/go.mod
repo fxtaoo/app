@@ -1,4 +1,4 @@
-module app/monitorDCN
+module app/monitor
 
 go 1.18
 

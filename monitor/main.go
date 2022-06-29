@@ -1,4 +1,4 @@
-// 周期检查 cpu 内存 磁盘，超出使用率邮件通知
+// 一些监控
 package main
 
 import (
