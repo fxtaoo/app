@@ -18,7 +18,6 @@ import (
 	"github.com/shirou/gopsutil/v3/net"
 )
 
-// 配置
 type CPUNumDisk struct {
 	NotifyMailList                      []string // 邮件通知列表
 	NotifyIntervalTime                  float64  // 通知间隔时间
@@ -39,7 +38,8 @@ type StartProcess struct {
 	RepeatTime     string     // 执行周期
 	NotifyMailList []string   // 邮件通知列表
 	ONOFF          bool       // 是否开启
-	ProcessList    [][]string // 进程列表
+	ProcessList    [][]string // 检查启动进程
+	ProcessScript  [][]string // 检查进程执行脚本
 }
 
 type Config struct {
@@ -74,10 +74,10 @@ func main() {
 }
 
 // 发送邮件写日志
-func sendEmailWriteLog(smtp *gomail.Smtp, subject, content string, mailList []string, logPath *string) {
+func sendEmailWriteLog(smtp *gomail.Smtp, subject, content string, mailList []string, logPath string) {
 	// 日志缺省路径
-	if *logPath == "" {
-		*logPath = filepath.Join(filepath.Dir(os.Args[0]), "monitor.log")
+	if logPath == "" {
+		logPath = filepath.Join(filepath.Dir(os.Args[0]), "monitor.log")
 	}
 
 	// 服务器信息
@@ -90,13 +90,13 @@ func sendEmailWriteLog(smtp *gomail.Smtp, subject, content string, mailList []st
 	gomail.SendEmailMP(smtp, &mail, mailList)
 
 	// 写日志
-	gofile.AppendFile(*logPath, fmt.Sprintf("%s %s", time.Now().Format("2006-01-02 15:04:05"), strings.ReplaceAll(content, "<br>", "\n")))
+	gofile.AppendFile(logPath, fmt.Sprintf("%s %s", time.Now().Format("2006-01-02 15:04:05"), strings.ReplaceAll(content, "<br>", "\n")))
 }
 
 // 检查 CPU、磁盘、内存,超出设置比例发送邮件
 func checkCPUNumDisk(conf *Config) {
 	// 顺序为 cpu 内存 磁盘，有顺序对应关系
-	warnList := []monitor.Warn{{Time: time.Now()}, {Time: time.Now()}, {Time: time.Now()}}
+	warnList := []monitor.Warn{{}, {}, {}}
 	checkList := []func(float64) (*monitor.Warn, error){monitor.CpuUsage, monitor.NumUsage, monitor.DiskUsage}
 	maxNumList := []float64{conf.CPUNumDisk.MaxiMumCPU, conf.CPUNumDisk.MaxiMumNUM, conf.CPUNumDisk.MaxiMumDisk}
 
@@ -123,7 +123,7 @@ func checkSendMail(conf *Config, warnList []monitor.Warn, checkList []func(float
 	}
 
 	if warnContent != "" {
-		sendEmailWriteLog(&conf.Smtp, "磁盘 | 内存 | CPU 告警", warnContent, conf.CPUNumDisk.NotifyMailList, &conf.CPUNumDisk.LogPath)
+		sendEmailWriteLog(&conf.Smtp, "磁盘 | 内存 | CPU 告警", warnContent, conf.CPUNumDisk.NotifyMailList, conf.CPUNumDisk.LogPath)
 	}
 }
 
@@ -131,14 +131,13 @@ func checkSendMail(conf *Config, warnList []monitor.Warn, checkList []func(float
 func checkRestartStopContainer(conf *Config) {
 	c := cron.New()
 	c.AddFunc(conf.RestartStopContainer.RepeatTime, func() {
-		fmt.Println("日志路径=", conf.RestartStopContainer.LogPath)
 		result, err := monitor.RestartStopContainer()
 		if err != nil {
 			gofile.AppendFile(conf.RestartStopContainer.LogPath, err.Error())
 			return
 		}
 		if result != "" {
-			sendEmailWriteLog(&conf.Smtp, "容器重启告警", strings.ReplaceAll(result, "\n", "<br>"), conf.RestartStopContainer.NotifyMailList, &conf.RestartStopContainer.LogPath)
+			sendEmailWriteLog(&conf.Smtp, "容器重启告警", strings.ReplaceAll(result, "\n", "<br>"), conf.RestartStopContainer.NotifyMailList, conf.RestartStopContainer.LogPath)
 		}
 	})
 	c.Start()
@@ -148,16 +147,37 @@ func checkRestartStopContainer(conf *Config) {
 func checkStartProcess(conf *Config) {
 	c := cron.New()
 	c.AddFunc(conf.StartProcess.RepeatTime, func() {
-		for _, e := range conf.StartProcess.ProcessList {
-			result, err := monitor.StartProcess(e[0], e[1])
-			if err != nil {
-				gofile.AppendFile(conf.StartProcess.LogPath, err.Error())
-				return
+		wg := &sync.WaitGroup{}
+		wg.Add(2)
+		// 检查启动进程
+		go func(conf *Config, wg *sync.WaitGroup) {
+			for _, e := range conf.StartProcess.ProcessList {
+				if len(e) == 1 {
+					e = append(e, "")
+				}
+				result, err := monitor.StartProcess(e[0], e[1])
+				if err != nil {
+					gofile.AppendFile(conf.StartProcess.LogPath, err.Error())
+					return
+				}
+				if result != "" {
+					sendEmailWriteLog(&conf.Smtp, "进程启动告警", strings.ReplaceAll(result, "\n", "<br>"), conf.StartProcess.NotifyMailList, conf.StartProcess.LogPath)
+				}
 			}
-			if result != "" {
-				sendEmailWriteLog(&conf.Smtp, "进程启动告警", strings.ReplaceAll(result, "\n", "<br>"), conf.StartProcess.NotifyMailList, &conf.StartProcess.LogPath)
+			wg.Done()
+		}(conf, wg)
+
+		// 检查启动脚本
+		go func(conf *Config, wg *sync.WaitGroup) {
+			for _, e := range conf.StartProcess.ProcessScript {
+				result := monitor.StartProcessScript(e[0], e[1])
+				if result != "" {
+					sendEmailWriteLog(&conf.Smtp, "脚本告警", strings.ReplaceAll(result, "\n", "<br>"), conf.StartProcess.NotifyMailList, "")
+				}
 			}
-		}
+		}(conf, wg)
+
+		wg.Wait()
 	})
 	c.Start()
 }

@@ -42,6 +42,8 @@ LogPath = ""
 NotifyMailList = []
 # 执行周期预设配置参考 https://pkg.go.dev/github.com/robfig/cron/v3#hdr-Predefined_schedules
 RepeatTime = "@every 10s"
-# ['执行文件' '2>&1 重定向文件目录（缺省执行文件同目录下 monitorNohup.out）']
+# 检查启动进程 [['执行文件（绝对路径）','2>&1 重定向文件目录（缺省执行文件同目录下 monitorNohup.out）']]
 ProcessList=[[]]
+# 检查进程执行脚本 [['执行文件（绝对路径）','执行脚本（绝对路径）']]
+ProcessScript=[[]]
 
