@@ -1,0 +1,8 @@
+[AliyunOSS]
+Endpoint = ""
+AccessKeyId = ""
+AccessKeySecret = ""
+
+[Qiniu]
+AccessKeyId = ""
+AccessKeySecret = ""
