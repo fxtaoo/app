@@ -12,7 +12,7 @@ import (
 
 	"github.com/fxtaoo/golib/gofile"
 	"github.com/fxtaoo/golib/gomail"
-	"github.com/fxtaoo/golib/monitor"
+	"github.com/fxtaoo/golib/gomonitor"
 	"github.com/robfig/cron/v3"
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/net"
@@ -77,7 +77,7 @@ func main() {
 func sendEmailWriteLog(smtp *gomail.Smtp, subject, content string, mailList []string, logPath string) {
 	// 日志缺省路径
 	if logPath == "" {
-		logPath = filepath.Join(filepath.Dir(os.Args[0]), "monitor.log")
+		logPath = filepath.Join(filepath.Dir(os.Args[0]), "gomonitor.log")
 	}
 
 	// 服务器信息
@@ -96,8 +96,8 @@ func sendEmailWriteLog(smtp *gomail.Smtp, subject, content string, mailList []st
 // 检查 CPU、磁盘、内存,超出设置比例发送邮件
 func checkCPUNumDisk(conf *Config) {
 	// 顺序为 cpu 内存 磁盘，有顺序对应关系
-	warnList := []monitor.Warn{{}, {}, {}}
-	checkList := []func(float64) (*monitor.Warn, error){monitor.CpuUsage, monitor.NumUsage, monitor.DiskUsage}
+	warnList := []gomonitor.Warn{{}, {}, {}}
+	checkList := []func(float64) (*gomonitor.Warn, error){gomonitor.CpuUsage, gomonitor.NumUsage, gomonitor.DiskUsage}
 	maxNumList := []float64{conf.CPUNumDisk.MaxiMumCPU, conf.CPUNumDisk.MaxiMumNUM, conf.CPUNumDisk.MaxiMumDisk}
 
 	c := cron.New()
@@ -107,7 +107,7 @@ func checkCPUNumDisk(conf *Config) {
 	c.Start()
 }
 
-func checkSendMail(conf *Config, warnList []monitor.Warn, checkList []func(float64) (*monitor.Warn, error), maxNumList []float64) {
+func checkSendMail(conf *Config, warnList []gomonitor.Warn, checkList []func(float64) (*gomonitor.Warn, error), maxNumList []float64) {
 
 	var warnContent string
 
@@ -131,7 +131,7 @@ func checkSendMail(conf *Config, warnList []monitor.Warn, checkList []func(float
 func checkRestartStopContainer(conf *Config) {
 	c := cron.New()
 	c.AddFunc(conf.RestartStopContainer.RepeatTime, func() {
-		result, err := monitor.RestartStopContainer()
+		result, err := gomonitor.RestartStopContainer()
 		if err != nil {
 			gofile.AppendFile(conf.RestartStopContainer.LogPath, err.Error())
 			return
@@ -155,7 +155,7 @@ func checkStartProcess(conf *Config) {
 				if len(e) == 1 {
 					e = append(e, "")
 				}
-				result, err := monitor.StartProcess(e[0], e[1])
+				result, err := gomonitor.StartProcess(e[0], e[1])
 				if err != nil {
 					gofile.AppendFile(conf.StartProcess.LogPath, err.Error())
 					return
@@ -170,7 +170,7 @@ func checkStartProcess(conf *Config) {
 		// 检查启动脚本
 		go func(conf *Config, wg *sync.WaitGroup) {
 			for _, e := range conf.StartProcess.ProcessScript {
-				result := monitor.StartProcessScript(e[0], e[1])
+				result := gomonitor.StartProcessScript(e[0], e[1])
 				if result != "" {
 					sendEmailWriteLog(&conf.Smtp, "脚本告警", strings.ReplaceAll(result, "\n", "<br>"), conf.StartProcess.NotifyMailList, "")
 				}
