@@ -3,9 +3,9 @@ module app/monitor
 go 1.18
 
 require (
-	github.com/fxtaoo/golib v0.0.0-20220704060752-e0793e25fc41
+	github.com/fxtaoo/golib v0.0.0-20220706063748-09fb8d015fe0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/shirou/gopsutil/v3 v3.22.5
+	github.com/shirou/gopsutil/v3 v3.22.6
 )
 
 require (
@@ -17,7 +17,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/tklauser/numcpus v0.5.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
-	golang.org/x/sys v0.0.0-20220702020025-31831981b65f // indirect
+	golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 )

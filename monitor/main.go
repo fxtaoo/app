@@ -77,7 +77,7 @@ func main() {
 func sendEmailWriteLog(smtp *gomail.Smtp, subject, content string, mailList []string, logPath string) {
 	// 日志缺省路径
 	if logPath == "" {
-		logPath = filepath.Join(filepath.Dir(os.Args[0]), "gomonitor.log")
+		logPath = filepath.Join(filepath.Dir(os.Args[0]), "monitor.log")
 	}
 
 	// 服务器信息
@@ -172,7 +172,7 @@ func checkStartProcess(conf *Config) {
 			for _, e := range conf.StartProcess.ProcessScript {
 				result := gomonitor.StartProcessScript(e[0], e[1])
 				if result != "" {
-					sendEmailWriteLog(&conf.Smtp, "脚本告警", strings.ReplaceAll(result, "\n", "<br>"), conf.StartProcess.NotifyMailList, "")
+					sendEmailWriteLog(&conf.Smtp, "脚本启动告警", strings.ReplaceAll(result, "\n", "<br>"), conf.StartProcess.NotifyMailList, "")
 				}
 			}
 		}(conf, wg)
