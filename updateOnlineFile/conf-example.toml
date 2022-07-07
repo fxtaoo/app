@@ -4,5 +4,5 @@ AccessKeyId = ""
 AccessKeySecret = ""
 
 [Qiniu]
-AccessKeyId = ""
-AccessKeySecret = ""
+AccessKey = ""
+SecretKey = ""

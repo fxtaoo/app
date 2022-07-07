@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/fxtaoo/golib/goaliyun"
 	"github.com/fxtaoo/golib/gofile"
@@ -56,7 +57,6 @@ func main() {
 	case "aliyun":
 		err = upFileAilyunOSS(&conf, &file)
 	}
-
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -69,17 +69,23 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	// 验证文件
-	compareFileMD5, err := gofile.OnlineLocalMD5Same(file.url, file.loadPath)
-	if err != nil {
-		log.Fatalln(err)
+	// 比较文件尝试 3 次，考虑 cdn 刷新需要时间
+	var compareFileMD5 bool
+	num := 0
+	for(!compareFileMD5 && num < 3) {
+		time.Sleep(90 * time.Second)
+		compareFileMD5, err = gofile.OnlineLocalMD5Same(file.url, file.loadPath)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		num++
 	}
+
 
 	if compareFileMD5 {
 		log.Println("文件更新成功")
 	} else {
-		log.Println("文件更新成功")
+		log.Println("文件更新失败")
 	}
 }
 
