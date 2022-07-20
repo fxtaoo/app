@@ -57,13 +57,13 @@ func (s *script) readInfo() {
 // app 相关信息添加 markdown 标签
 func (s script) appMarkdown() string {
 	// return "[" + s.name + "]" + "(" + s.codeUrl + ")" + "　[githubRaw]" + "(" + s.githubRaw + ")" + " [fxtaooRaw]" + "(" + s.fxtaooRaw + ")" + "  \n" + s.info + "  "
-	return fmt.Sprintf("| [%v](%v) | [%v](%v) |", s.name, s.codeUrl, s.info, s.githubRaw)
+	return fmt.Sprintf("| [%v](%v) | [%v](%v) |", s.name, s.codeUrl, s.info, s.fxtaooRaw)
 
 }
 
 // 读整个文件夹下 app 信息，并聚合
 func (d *scriptDir) readApp() {
-	err := filepath.Walk(d.path, func(path string, file os.FileInfo, err error) error {
+	err := filepath.Walk(d.path, func(path string, file os.FileInfo, _ error) error {
 		// 遍历文件
 		if file.Name() != d.path && !strings.HasPrefix(path, ".") {
 			// 排除隐藏文件 . ..
