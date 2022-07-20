@@ -17,3 +17,5 @@
 **/conf.toml
 **/main
 **/nopush**
+**/*.log
+**/tmp
