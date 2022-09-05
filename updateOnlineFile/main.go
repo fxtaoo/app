@@ -69,18 +69,17 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	// 比较文件尝试 3 次，考虑 cdn 刷新需要时间
+	// 比较文件尝试 2 次，等待 3 分钟，考虑 cdn 刷新需要时间
 	var compareFileMD5 bool
 	num := 0
-	for(!compareFileMD5 && num < 3) {
-		time.Sleep(90 * time.Second)
+	for !compareFileMD5 && num < 2 {
+		time.Sleep(2 * time.Minute)
 		compareFileMD5, err = gofile.OnlineLocalMD5Same(file.url, file.loadPath)
 		if err != nil {
 			log.Fatalln(err)
 		}
 		num++
 	}
-
 
 	if compareFileMD5 {
 		log.Println("文件更新成功")
