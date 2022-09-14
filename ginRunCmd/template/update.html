@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8" />
+    <title>测试环境更新</title>
+    <script type="application/javascript">
+      function funShowHide() {
+        document.getElementById("tbcontent").style.display = "block";
+        document.getElementById("tbcontent2").style.display = "none";
+      }
+    </script>
+    <style>
+      dot {
+        display: inline-block;
+        height: 1em;
+        line-height: 1;
+        text-align: left;
+        vertical-align: -0.25em;
+        overflow: hidden;
+      }
+
+      dot::before {
+        display: block;
+        content: ".....\A....\A...\A..\A.";
+        white-space: pre-wrap;
+        /* 也可以是white-space: pre */
+        animation: dot 3s infinite step-start both;
+      }
+
+      @keyframes dot {
+        20% {
+          transform: translateY(-5em);
+        }
+
+        40% {
+          transform: translateY(-4em);
+        }
+
+        60% {
+          transform: translateY(-3em);
+        }
+
+        80% {
+          transform: translateY(-2em);
+        }
+
+        100% {
+          transform: translateY(-1em);
+        }
+      }
+
+      #tbcontent {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>测试环境更新</h1>
+
+    <form action="/test/update?sort=im" method="post">
+      <label>IM</label>
+      <select name="name">
+        {{ range $key,$value := .ServicesTag.im }}
+        <option value="{{ $key }}">{{ $key }}</option>
+        {{ end}}
+      </select>
+      标签：<input type="text" name="tag" />
+      <input type="submit" value="更新" onclick="funShowHide()" />
+    </form>
+    <br />
+    <form action="/test/update?sort=java" method="post">
+      <label>Java</label>
+      <select name="name">
+        {{ range $key,$value := .ServicesTag.java }}
+        <option value="{{ $key }}">{{ $key }}</option>
+        {{ end}}
+      </select>
+      标签：<input type="text" name="tag" />
+      <input type="submit" value="更新" onclick="funShowHide()" />
+    </form>
+
+    <div id="tbcontent">
+      <p>
+        <strong>耐心等待，正在更新<dot>.....</dot></strong>
+      </p>
+    </div>
+
+    <div id="tbcontent2">
+      {{ if .UpdateServer.TagNew }}
+      <br />
+      <p>{{ .UpdateServer.Sort }} 服务 {{ .UpdateServer.Name }}</p>
+
+      <p>更新前版本 {{ .UpdateServer.TagOld }}</p>
+
+      <p>
+        更新版本 {{ .UpdateServer.TagNew }} 结果: {{ range $key,$value :=
+        .UpdateServer.Result }}
+        <br />
+        {{ $value }} {{ end}}
+      </p>
+      {{ end }}
+    </div>
+  </body>
+
+</html>

@@ -8,3 +8,4 @@ Go 写的小工具
 | [readmeBuild2](https://github.com/fxtaoo/app/tree/master/readmeBuild2)               | [fxtaoo/cmd](https://github.com/fxtaoo/cmd) README.md 生成工具 |
 | [sendMail](https://github.com/fxtaoo/app/tree/master/sendMail)                       | 发送邮件                                                       |
 | [updateOnlineFile](https://github.com/fxtaoo/app/tree/master/updateOnlineFile)       | 更新线上文件，CDN 刷新                                                |
+| [ginRunCmd](https://github.com/fxtaoo/app/tree/master/ginRunCmd) | gin 练习，访问页面，执行命令 |
