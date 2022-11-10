@@ -1,0 +1,12 @@
+go 1.19
+
+use (
+	./adPasswdResetNotice
+	./ginRunCmd
+	./monitor
+	./readmeBuild
+	./readmeBuild2
+	./sendMail
+	./tmpFtp
+	./updateOnlineFile
+)

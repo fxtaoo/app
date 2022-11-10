@@ -28,6 +28,7 @@ echo -e "# ${app_name}\n${intro}\n\n## 配置\n\n## 功能\n - [ ] " > ./README.
 
 echo -e "| [${app_name}](${github_repository_url}/${app_name}) | ${intro} |">> ./README.md
 
+go work use $app_name
 # vscode 新窗口打开
 code ./$app_name &
 
