@@ -13,11 +13,22 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fxtaoo/golib/gofile"
-	"github.com/fxtaoo/golib/gomail"
+	"github.com/fxtaoo/golib/file"
+	"github.com/fxtaoo/golib/mail"
 	"github.com/go-cmd/cmd"
 	"github.com/robfig/cron/v3"
 )
+
+const (
+	ADLogFileName       = "adPasswdResetNotice.log"
+	ConfigFileName      = "conf.json"
+	UserDataFileName    = "userdata.csv"
+	ExcludeUserFileName = "excludeuser.csv"
+	PowerShellFileName  = "finduser.ps1"
+	MailContentFileName = "mailContent"
+)
+
+var dirPath string
 
 type User struct {
 	email             string // 邮件地址
@@ -26,14 +37,56 @@ type User struct {
 }
 
 type ADConfig struct {
-	MxPasswordAge           int
-	MailDomain, MailContent string
-	AdminMail               []string
+	MxPasswordAge int      `json:"mxPasswordAge"`
+	DayStart      int      `json:"dayStart"`
+	MailDomain    string   `json:"mailDomain"`
+	MailContent   string   `json:"-"`
+	AdminMail     []string `json:"adminMail"`
 }
 
 type Config struct {
-	AD   ADConfig
-	Stmp gomail.Smtp
+	AD   ADConfig  `json:"ad"`
+	Stmp mail.Smtp `json:"smtp"`
+}
+
+func init() {
+	dirPath = filepath.Dir(os.Args[0])
+}
+
+func main() {
+	// 日志
+	logFile, err := os.OpenFile(filePath(ADLogFileName), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	if err != nil {
+		panic(err)
+	}
+	defer logFile.Close()
+
+	// 配置
+	var conf Config
+	file.JsonInitValue(filePath(ConfigFileName), &conf)
+
+	email := mail.Mail{
+		To:         make([]string, 1),
+		Subject:    "AD 域用户密码到期邮件提醒",
+		AttachPath: filePath("nopush-example.png"),
+	}
+
+	// mailContent
+	tmpByte, _ := os.ReadFile(filePath(MailContentFileName))
+	conf.AD.MailContent = string(tmpByte)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	c := cron.New()
+	c.AddFunc("0 9 * * *", func() { readDataSendMail(&conf, logFile, &email) })
+	c.Start()
+
+	wg.Wait()
+}
+
+func filePath(name string) string {
+	return filepath.Join(dirPath, name)
 }
 
 func sendAdmailCount(userList *[]string, content *string, sort string) {
@@ -44,14 +97,14 @@ func sendAdmailCount(userList *[]string, content *string, sort string) {
 }
 
 // 读数据发送邮件
-func readDataSendMail(conf *Config, logFile *os.File, email *gomail.Mail, stmp *gomail.Smtp) {
+func readDataSendMail(conf *Config, logFile *os.File, email *mail.Mail) {
 	mw := io.MultiWriter(os.Stdout, logFile)
 
 	log.SetOutput(mw)
 	log.Println("\n" + time.Now().Format("2006-01-02 15:04:05"))
 
 	// 从域控生成数据
-	cmd := cmd.NewCmd("powershell.exe", filepath.Join(filepath.Dir(os.Args[0]), PowerShellFileName))
+	cmd := cmd.NewCmd("powershell.exe", filePath(PowerShellFileName))
 	status := <-cmd.Start()
 
 	for _, line := range status.Stdout {
@@ -63,14 +116,14 @@ func readDataSendMail(conf *Config, logFile *os.File, email *gomail.Mail, stmp *
 
 	// 用户数据
 	var userList []User
-	csvdata, _ := gofile.CSVFileRead(UserDataFileName)
+	csvdata, _ := file.CSVRead(filePath(UserDataFileName))
 	for _, row := range csvdata {
 		userList = append(userList, User{row[0], strings.Split(row[1], " ")[0], row[2]})
 	}
 
 	// 排除用户
 	var excludeUser []string
-	csvdata, _ = gofile.CSVFileRead(ExcludeUserFileName)
+	csvdata, _ = file.CSVRead(filePath(ExcludeUserFileName))
 	for _, row := range csvdata {
 		excludeUser = append(excludeUser, row[0])
 	}
@@ -98,12 +151,12 @@ func readDataSendMail(conf *Config, logFile *os.File, email *gomail.Mail, stmp *
 		dateInterval := (conf.AD.MxPasswordAge - int(d.Hours()/24))
 
 		if dateInterval < 0 {
-			// 密码以过期
+			// 密码以彻底过期
 			expiredUser = append(expiredUser, fmt.Sprintf("%s %s 以过期 %d 天 <br>", user.email, user.name, dateInterval*-1))
-		} else {
-			email.To = user.email
+		} else if dateInterval <= conf.AD.DayStart {
+			email.To[0] = user.email + conf.AD.MailDomain
 			email.Body = fmt.Sprintf("<strong>人事 VPN 密码还有 %d 天到期！请尽快按提示重置密码<br>%s", dateInterval, conf.AD.MailContent)
-			if error := gomail.SendEmail(stmp, email); error != nil {
+			if error := email.SendAlone(&conf.Stmp); error != nil {
 				falseSendMail = append(falseSendMail, user.email+" "+user.name+" 还有 "+strconv.Itoa(dateInterval)+" 天到期 <br>")
 				log.Println(user.email + conf.AD.MailDomain + " 通知邮件发送失败！")
 			} else {
@@ -114,54 +167,19 @@ func readDataSendMail(conf *Config, logFile *os.File, email *gomail.Mail, stmp *
 		time.Sleep(3 * time.Second)
 	}
 
-	sendAdmailCount(&expiredUser, &admailContent, "<br><strong>过期用户名：</strong><br>")
 	sendAdmailCount(&falseSendMail, &admailContent, "<br><strong>提醒邮件发送失败用户名：</strong><br>")
 	sendAdmailCount(&trueSendMail, &admailContent, "<br><strong>提醒邮件发送成功用户名:</strong><br>")
+	sendAdmailCount(&expiredUser, &admailContent, "<br><strong>过期用户名：</strong><br>")
 
 	// 域控邮件提醒统计
 	email.Subject = "今日域控邮件提醒统计"
 	email.Body = admailContent
-	if err := gomail.SendEmailMP(stmp, email, conf.AD.AdminMail); err != nil {
+	email.To = conf.AD.AdminMail
+	if err := email.SendAlone(&conf.Stmp); err != nil {
 		log.Println("域控邮件提醒统计发送失败！")
 	} else {
-		for range err {
-			log.Println(email.To + "域控邮件提醒统计发送失败！")
+		for i := range err {
+			log.Println(email.To[i] + "域控邮件提醒统计发送失败！")
 		}
 	}
-}
-
-const (
-	ADLogFileName       = "adPasswdResetNotice.log"
-	ConfigFileName      = "conf.toml"
-	UserDataFileName    = "userdata.csv"
-	ExcludeUserFileName = "excludeuser.csv"
-	PowerShellFileName  = "finduser.ps1"
-)
-
-func main() {
-	// 日志
-	logFile, err := os.OpenFile(filepath.Join(filepath.Dir(os.Args[0]), ADLogFileName), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-
-	if err != nil {
-		panic(err)
-	}
-	defer logFile.Close()
-
-	// 配置
-	var conf Config
-	gofile.TomlFileRead(ConfigFileName, &conf)
-
-	var email gomail.Mail
-	var stmp gomail.Smtp
-	email.Subject = "AD 域用户密码到期邮件提醒"
-	email.AttachPath = filepath.Join(filepath.Dir(os.Args[0]), "nopush-example.png")
-
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-
-	c := cron.New()
-	c.AddFunc("0 9 * * *", func() { readDataSendMail(&conf, logFile, &email, &stmp) })
-	c.Start()
-
-	wg.Wait()
 }

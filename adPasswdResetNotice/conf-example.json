@@ -1,0 +1,17 @@
+{
+    "smtp": {
+        "host": "",
+        "port": 465,
+        "address": "",
+        "passWd": "",
+        "name": ""
+    },
+    "ad": {
+        "mxPasswordAge": 120,
+        "dayStart": 14,
+        "mailDomain": "@xxx.com",
+        "adminMail": [
+            ""
+        ]
+    }
+}

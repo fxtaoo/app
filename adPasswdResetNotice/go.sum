@@ -1,7 +1,7 @@
-github.com/BurntSushi/toml v1.1.0 h1:ksErzDEI1khOiGPgpwuI7x2ebx/uXQNw7xJpn9Eq1+I=
-github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
-github.com/fxtaoo/golib v0.0.0-20220628061539-2fb9d1266539 h1:kE5l/BAZw0M2GCJD9Tx6zH9wghkYXUPvC1qCaUq6KDw=
-github.com/fxtaoo/golib v0.0.0-20220628061539-2fb9d1266539/go.mod h1:lb4CC3qsxj5TzYclwjoF1SmbunKhL9t36Oek0gjcX4I=
+github.com/BurntSushi/toml v1.2.1 h1:9F2/+DoOYIOksmaJFPw1tGFy1eDnIJXg+UHjuD8lTak=
+github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
+github.com/fxtaoo/golib v0.0.0-20221115091203-8c16401c0054 h1:pbwQ/xUk6Lbwdxydr6oTyFZdJ/NT/jDVI4jGDX2owVM=
+github.com/fxtaoo/golib v0.0.0-20221115091203-8c16401c0054/go.mod h1:t1GROsbQkuWybuT8B1KN3g3P+X97UnQo22jvTinW6UY=
 github.com/go-cmd/cmd v1.4.1 h1:JUcEIE84v8DSy02XTZpUDeGKExk2oW3DA10hTjbQwmc=
 github.com/go-cmd/cmd v1.4.1/go.mod h1:tbBenttXtZU4c5djS1o7PWL5pd2xAr5sIqH1kGdNiRc=
 github.com/go-test/deep v1.0.7 h1:/VSMRlnY/JSyqxQUzQLKVMAskpY/NZKFA5j2P+0pP2M=
