@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/fxtaoo/golib/gofile"
+	"github.com/fxtaoo/golib/file"
 )
 
 type InfoConf struct {
@@ -96,7 +96,7 @@ var conf Config
 
 func main() {
 
-	gofile.TomlFileRead("conf.toml", &conf)
+	file.TomlInitValue("conf.toml", &conf)
 
 	appDirList := make([]scriptDir, len(conf.Info.DirInfo))
 

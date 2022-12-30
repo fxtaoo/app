@@ -4,12 +4,12 @@ package main
 import (
 	"flag"
 
-	"github.com/fxtaoo/golib/gofile"
-	"github.com/fxtaoo/golib/gomail"
+	"github.com/fxtaoo/golib/file"
+	"github.com/fxtaoo/golib/mail"
 )
 
 type Config struct {
-	Smtp gomail.Smtp
+	Smtp mail.Smtp
 }
 
 func main() {
@@ -25,15 +25,15 @@ func main() {
 	}
 
 	var conf Config
-	gofile.TomlFileRead(*configFile, &conf)
+	file.TomlInitValue(*configFile, &conf)
 
-	var mail gomail.Mail
-	mail.To = *to
+	var mail mail.Mail
+	mail.To[0] = *to
 	mail.Subject = *subject
 	mail.Body = *body
 	mail.AttachPath = *attachPath
 
-	if err := gomail.SendEmail(&conf.Smtp, &mail); err != nil {
+	if err := mail.Send(&conf.Smtp); err != nil {
 		panic(err)
 	}
 }

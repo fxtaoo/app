@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/fxtaoo/golib/goaliyun"
-	"github.com/fxtaoo/golib/gofile"
-	"github.com/fxtaoo/golib/goqiniu"
+	"github.com/fxtaoo/golib/aliyun"
+	libfile "github.com/fxtaoo/golib/file"
+	"github.com/fxtaoo/golib/qiniu"
 )
 
 type AliyunOSS struct {
@@ -49,7 +49,7 @@ func main() {
 
 	// 读配置
 	conf := Config{}
-	gofile.TomlFileRead(confPath, &conf)
+	libfile.TomlInitValue(confPath, &conf)
 
 	var err error
 	// 上传文件
@@ -74,7 +74,7 @@ func main() {
 	num := 0
 	for !compareFileMD5 && num < 2 {
 		time.Sleep(2 * time.Minute)
-		compareFileMD5, err = gofile.OnlineLocalMD5Same(file.url, file.loadPath)
+		compareFileMD5, err = libfile.LocalOnline(file.url, file.loadPath)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -91,14 +91,10 @@ func main() {
 // 阿里云 OSS 上传文件
 func upFileAilyunOSS(conf *Config, f *FileInfo) error {
 	// 初始化 OSS 实例
-	oss := goaliyun.OSS{Endpoint: conf.AliyunOSS.Endpoint, AccessKeyId: conf.AliyunOSS.AccessKeyID, AccessKeySecret: conf.AliyunOSS.AccessKeySecret}
-	client, err := goaliyun.OSSClient(&oss)
-	if err != nil {
-		return err
-	}
+	oss := aliyun.OSSConf{Endpoint: conf.AliyunOSS.Endpoint, AccessKeyId: conf.AliyunOSS.AccessKeyID, AccessKeySecret: conf.AliyunOSS.AccessKeySecret}
 
-	file := goaliyun.File{BucketName: f.bucket, BucketFilePath: f.storagePath, LoadFilePath: f.loadPath}
-	err = goaliyun.UploadFile(client, &file)
+	file := aliyun.OSSFile{BucketName: f.bucket, BucketFilePath: f.storagePath, LoadFilePath: f.loadPath}
+	err := file.UploadFile(&oss)
 	if err != nil {
 		return err
 	}
@@ -108,9 +104,9 @@ func upFileAilyunOSS(conf *Config, f *FileInfo) error {
 
 // 七牛云 CDN 刷新
 func urlsRefreshQiniu(conf *Config, f *FileInfo) error {
-	key := goqiniu.Key{AccessKey: conf.Qiniu.AccessKey, SecretKey: conf.Qiniu.SecretKey}
-	cdn := goqiniu.CdnManager(key)
-	_, err := goqiniu.UrlsRefresh(cdn, []string{f.url})
+	key := qiniu.Key{AccessKey: conf.Qiniu.AccessKey, SecretKey: conf.Qiniu.SecretKey}
+	cdn := qiniu.CdnManager(key)
+	_, err := qiniu.UrlsRefresh(cdn, []string{f.url})
 	if err != nil {
 		return err
 	}

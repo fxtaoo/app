@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/fxtaoo/golib/gofile"
+	"github.com/fxtaoo/golib/file"
 )
 
 type Note struct {
@@ -38,7 +38,7 @@ func main() {
 
 	// 读配置
 	var conf Config
-	gofile.TomlFileRead("conf.toml", &conf)
+	file.TomlInitValue("conf.toml", &conf)
 
 	var questions []Question
 	var wg sync.WaitGroup
