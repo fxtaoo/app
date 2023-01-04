@@ -2,7 +2,7 @@
 package main
 
 import (
-	"app/tool/dfb"
+	"app/webTool/dfb"
 	"bytes"
 	"flag"
 	"os"
@@ -37,7 +37,7 @@ func main() {
 			panic(err)
 		}
 
-		ctx.Data(200, "text/html", buf.Bytes())
+		ctx.Data(200, "text/html; charset=utf-8", buf.Bytes())
 	})
 
 	r.LoadHTMLGlob("templates/*.html")

@@ -3,6 +3,6 @@
 
 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o main .
 
-docker build -t fxtaoo/tool:latest .
+docker build -t fxtaoo/webtool:latest .
 
-docker push fxtaoo/tool:latest
+docker push fxtaoo/webtool:latest

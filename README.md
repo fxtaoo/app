@@ -10,4 +10,4 @@ Go 写的小工具
 | [updateOnlineFile](https://github.com/fxtaoo/app/tree/master/updateOnlineFile)       | 更新线上文件，CDN 刷新                                         |
 | [ginRunCmd](https://github.com/fxtaoo/app/tree/master/ginRunCmd)                     | gin 练习，访问页面，执行命令                                   |
 | [tmpFtp](https://github.com/fxtaoo/app/tree/master/tmpFtp)                           | 临时 FTP                                                       |
-| [tool](https://github.com/fxtaoo/app/tree/master/tool)                               | 日常工具                                                       |
+| [tool](https://github.com/fxtaoo/app/tree/master/webtool)                            | Web 日常工具                                                   |

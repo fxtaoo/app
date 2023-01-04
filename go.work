@@ -2,7 +2,7 @@ go 1.19
 
 use (
 	./adPasswdResetNotice
-	./tool
+	./webtool
 	./ginRunCmd
 	./monitor
 	./readmeBuild

@@ -1,4 +1,4 @@
-module app/tool
+module app/webTool
 
 go 1.19
 
