@@ -21,7 +21,7 @@ package main
 
 # 创建目录与文件
 (mkdir ./$app_name && cd $app_name && \
-go mod init app/${app_name}&& \
+go mod init app/${app_name} && \
 echo -e "$content" > ./main.go
 echo -e "$content" > ./main_test.go
 echo -e "# ${app_name}\n${intro}\n\n## 配置\n\n## 功能\n - [ ] " > ./README.md)

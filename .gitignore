@@ -15,6 +15,7 @@
 # vendor/
 
 **/conf.*
+!**/conf.go
 **/main
 **/nopush**
 **/*.log
