@@ -2,7 +2,6 @@ go 1.19
 
 use (
 	./adPasswdResetNotice
-	./webtool
 	./ginRunCmd
 	./monitor
 	./readmeBuild
@@ -10,4 +9,6 @@ use (
 	./sendMail
 	./tmpFtp
 	./updateOnlineFile
+	./webtool
+	./mfsalarm
 )

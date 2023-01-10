@@ -1,0 +1,8 @@
+version: '3'
+services:
+  webtool:
+    image: fxtaoo/mfsalarm:latest
+    container_name: mfsalarm
+    volumes:
+      - conf.json:/app/conf.json
+    restart: always

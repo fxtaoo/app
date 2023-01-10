@@ -1,0 +1,17 @@
+{
+    "smtp": {
+        "host": "",
+        "port": 465,
+        "address": "",
+        "passWd": "",
+        "name": "MFS 报警"
+    },
+    "diskalarm": {
+        "url": "http://",
+        "mails": [
+            ""
+        ],
+        "checkIntervalTime": "*/1 * * * *",
+        "alarmIntervalTime": 30
+    }
+}
