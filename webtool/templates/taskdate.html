@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日期计算</title>
+    <title>任务日期计算</title>
 </head>
 
 <body>
+    <a href="/tool">日常工具</a>
+    <h2>任务日期计算</h2>
     <form action="/tool/taskdate" method="POST">
         <label for="startdate">开始日期:</label>
         <input type="date" name="startdate" value="{{ .Date }}">
