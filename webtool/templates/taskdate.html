@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日期计算</title>
+</head>
+
+<body>
+    <form action="/tool/taskdate" method="POST">
+        <label for="startdate">开始日期:</label>
+        <input type="date" name="startdate" value="{{ .Date }}">
+        <br>
+        <label for="chapter">章节数:</label>
+        <input type="text" name="chapter" required value="{{ .Chapter }}">
+        <br>
+        <label for="chapterday">每天章节数:</label>
+        <input type="text" name="chapterday" required value="{{ .Chapterday }}">
+        <button>查询</button>
+    </form>
+    {{ if .Message }}
+    {{ .Message }} 为计划任务最后一天
+    {{ end }}
+</body>
+
+</html>

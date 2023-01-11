@@ -3,6 +3,7 @@ package main
 
 import (
 	"app/webTool/dfb"
+	"app/webTool/taskdate"
 	"bytes"
 	"flag"
 	"os"
@@ -42,8 +43,9 @@ func main() {
 
 	r.LoadHTMLGlob("templates/*.html")
 	rTool := r.Group("/tool")
-	rTool.GET("/dfb", dfb.GetDdb)
-	rTool.POST("/dfb", dfb.PostDdb)
-
+	rTool.GET("/dfb", dfb.Get)
+	rTool.POST("/dfb", dfb.Post)
+	rTool.GET("/taskdate", taskdate.Get)
+	rTool.POST("/taskdate", taskdate.Post)
 	r.Run(":" + *port)
 }

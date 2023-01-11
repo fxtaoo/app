@@ -13,7 +13,7 @@ type V struct {
 	Message  string
 }
 
-func GetDdb(ctx *gin.Context) {
+func Get(ctx *gin.Context) {
 	// 默认吃饭时间为明天 07:50
 	V := V{
 		time.Now().AddDate(0, 0, 1).Format("2006-01-02") + "T07:50",
@@ -21,7 +21,7 @@ func GetDdb(ctx *gin.Context) {
 	ctx.HTML(200, "dfb.html", V)
 }
 
-func PostDdb(ctx *gin.Context) {
+func Post(ctx *gin.Context) {
 	V := V{"", ""}
 	cooktime, _ := strconv.Atoi(ctx.PostForm("cooktime"))
 
