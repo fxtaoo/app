@@ -13,7 +13,7 @@
     <h2>电饭煲定时计算</h2>
     <form action="/tool/dfb" method="POST">
         <label for="cooktime">煮饭需要时间（分钟）:</label>
-        <input type="text" name="cooktime" required value="60">
+        <input type="text" name="cooktime" required value={{ .Cooktime }}>
         <br>
         <label for="mealtime">吃饭时间:</label>
         <input type="datetime-local" name="mealtime" value="{{ .DateTime }}">
