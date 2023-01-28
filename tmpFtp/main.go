@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shirou/gopsutil/host"
+	gopsutilNet "github.com/shirou/gopsutil/net"
 )
 
 func main() {
@@ -36,5 +40,30 @@ func main() {
 
 	r.StaticFS("/", gin.Dir(*dir, *list))
 
+	address := "访问地址："
+	if *ip != "" {
+		address += fmt.Sprintf("\nhttp://%s:%s", *ip, strconv.Itoa(*port))
+	} else {
+		host, _ := host.Info()
+		ip, _ := gopsutilNet.Interfaces()
+
+		ipIndex := 0
+		// 默认为 linux
+		switch host.OS {
+		case "windows":
+			ipIndex = 1
+		}
+
+		for _, e := range ip {
+			address += fmt.Sprintf("\nhttp://%s:%d %s",
+				strings.Split(e.Addrs[ipIndex].Addr, "/")[0],
+				*port,
+				e.Name)
+		}
+	}
+
+	fmt.Printf("\n%s\n\n", address)
+
 	r.Run(fmt.Sprintf("%s:%d", *ip, *port))
+
 }
