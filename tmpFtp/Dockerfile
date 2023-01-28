@@ -2,9 +2,9 @@ FROM scratch
 
 WORKDIR /dir
 
-COPY tmpFtp /
+COPY main /
 
 EXPOSE 9527
 
-ENTRYPOINT ["/tmpFtp"]
+ENTRYPOINT ["/main"]
 CMD [ "-dir=/dir" ]
