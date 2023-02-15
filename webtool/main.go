@@ -20,8 +20,9 @@ func main() {
 	flag.Parse()
 
 	r := gin.Default()
-
-	r.GET("/tool", func(ctx *gin.Context) {
+	r.LoadHTMLGlob("templates/*.html")
+	rG := r.Group("/tool")
+	rG.GET("/", func(ctx *gin.Context) {
 		file, _ := os.ReadFile("README.md")
 		md := goldmark.New(
 			goldmark.WithExtensions(extension.GFM),
@@ -40,12 +41,9 @@ func main() {
 
 		ctx.Data(200, "text/html; charset=utf-8", buf.Bytes())
 	})
-
-	r.LoadHTMLGlob("templates/*.html")
-	rTool := r.Group("/tool")
-	rTool.GET("/dfb", dfb.Get)
-	rTool.POST("/dfb", dfb.Post)
-	rTool.GET("/taskdate", taskdate.Get)
-	rTool.POST("/taskdate", taskdate.Post)
+	rG.GET("/dfb", dfb.Get)
+	rG.POST("/dfb", dfb.Post)
+	rG.GET("/taskdate", taskdate.Get)
+	rG.POST("/taskdate", taskdate.Post)
 	r.Run(":" + *port)
 }
