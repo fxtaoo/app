@@ -3,6 +3,7 @@ package main
 
 import (
 	"app/webTool/dfb"
+	"app/webTool/etf"
 	"app/webTool/taskdate"
 	"bytes"
 	"flag"
@@ -45,5 +46,7 @@ func main() {
 	rG.POST("/dfb", dfb.Post)
 	rG.GET("/taskdate", taskdate.Get)
 	rG.POST("/taskdate", taskdate.Post)
+	rG.GET("/etf", etf.Get)
+	rG.POST("/etf", etf.POST)
 	r.Run(":" + *port)
 }
