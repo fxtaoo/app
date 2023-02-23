@@ -13,7 +13,8 @@
     <h2>任务日期计算</h2>
     <form action="taskdate" method="POST">
         <label for="startdate">开始日期:</label>
-        <input type="date" name="startdate" value="{{ .Date }}">
+        <input type="date" name="startdate" value="{{ .StarDate }}">
+        <input type="date" name="enddate" value="{{ .EndDate }}">
         <br>
         <label for="chapter">章节数:</label>
         <input type="text" name="chapter" required value="{{ .Chapter }}">
@@ -22,9 +23,7 @@
         <input type="text" name="chapterday" required value="{{ .Chapterday }}">
         <button>查询</button>
     </form>
-    {{ if .Message }}
-    {{ .Message }} 为计划任务最后一天
-    {{ end }}
+    {{ .Message }}
 </body>
 
 </html>
