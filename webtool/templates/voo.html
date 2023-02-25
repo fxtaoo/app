@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOO 定投金额计算</title>
+    <style type="text/css">
+        html {
+            font-family: sans-serif;
+        }
+
+        table {
+            border-collapse: collapse;
+            border: 2px solid rgb(200, 200, 200);
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+        }
+
+        td,
+        th {
+            border: 1px solid rgb(190, 190, 190);
+            padding: 10px 20px;
+        }
+
+        th {
+            background-color: rgb(235, 235, 235);
+        }
+
+        td {
+            text-align: center;
+        }
+
+        caption {
+            padding: 10px;
+        }
+
+        .small-font {
+            font-size: 0.8rem
+        }
+
+    </style>
+</head>
+
+<body>
+    <a href="/tool">日常工具</a>
+    <h2><a href="{{ .URL }}">VOO 定投金额计算</a></h2>
+    <br>
+    <span class="small-font">数据更新时间：{{ formatTime .Time }}</span>
+    <table>
+        <tr>
+            <td>名称</td>
+            <td>PE</td>
+            <td>ROE</td>
+            <td>价值</td>
+            <td>倍数</td>
+            <td>金额</td>
+        </tr>
+        <tr>
+            <td>VOO</td>
+            <td>{{ .PE }}</td>
+            <td>{{ .ROE }}</td>
+            <td>{{ formatFloat .Value }}</td>
+            <td>{{ formatFloat .Multiple }}</td>
+            <td>{{ formatFloat .Money }}</td>
+        </tr>
+    </table>
+</body>
+
+</html>

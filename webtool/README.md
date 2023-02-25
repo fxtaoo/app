@@ -4,3 +4,4 @@
 [任务日期计算](/tool/taskdate)  
 [股票价值提醒](/tool/stock/)  
 [ETF 定投金额计算](/tool/etf)  
+[VOO 定投金额计算](/tool/voo)  

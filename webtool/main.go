@@ -5,9 +5,14 @@ import (
 	"app/webTool/dfb"
 	"app/webTool/etf"
 	"app/webTool/taskdate"
+	"app/webTool/voo"
 	"bytes"
 	"flag"
+	"fmt"
 	"os"
+	"strconv"
+	"text/template"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yuin/goldmark"
@@ -21,6 +26,15 @@ func main() {
 	flag.Parse()
 
 	r := gin.Default()
+	r.SetFuncMap(template.FuncMap{
+		"formatFloat": func(f float64) string {
+			tmpF, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", f), 64)
+			return fmt.Sprintf("%g", tmpF)
+		},
+		"formatTime": func(t time.Time) string {
+			return t.Format("2006/01/02 15:04:05")
+		},
+	})
 	r.LoadHTMLGlob("templates/*.html")
 	rG := r.Group("/tool")
 	rG.GET("/", func(ctx *gin.Context) {
@@ -47,6 +61,10 @@ func main() {
 	rG.GET("/taskdate", taskdate.Get)
 	rG.POST("/taskdate", taskdate.Post)
 	rG.GET("/etf", etf.Get)
-	rG.POST("/etf", etf.POST)
+
+	VOOV := voo.V{}
+	rG.GET("/voo", func(ctx *gin.Context) {
+		VOOV.Get(ctx)
+	})
 	r.Run(":" + *port)
 }
