@@ -2,15 +2,16 @@
 package main
 
 import (
+	"app/webTool/conf"
 	"app/webTool/dfb"
 	"app/webTool/etf"
+	"app/webTool/lib"
 	"app/webTool/taskdate"
 	"app/webTool/voo"
 	"bytes"
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"text/template"
 	"time"
 
@@ -25,14 +26,18 @@ func main() {
 	port := flag.String("port", "54328", "监听端口")
 	flag.Parse()
 
+	// 配置
+	conf := conf.Conf{}
+	err := conf.Init()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	r := gin.Default()
 	r.SetFuncMap(template.FuncMap{
-		"formatFloat": func(f float64) string {
-			tmpF, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", f), 64)
-			return fmt.Sprintf("%g", tmpF)
-		},
+		"formatFloat": lib.FormatFloat,
 		"formatTime": func(t time.Time) string {
-			return t.Format("2006/01/02 15:04:05")
+			return t.Format("2006/01/02")
 		},
 	})
 	r.LoadHTMLGlob("templates/*.html")
@@ -63,6 +68,8 @@ func main() {
 	rG.GET("/etf", etf.Get)
 
 	VOOV := voo.V{}
+	VOOV.Chan = make(chan struct{}, 1)
+	VOOV.Timing(&conf)
 	rG.GET("/voo", func(ctx *gin.Context) {
 		VOOV.Get(ctx)
 	})
