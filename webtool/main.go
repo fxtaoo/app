@@ -42,6 +42,7 @@ func main() {
 	})
 	r.LoadHTMLGlob("templates/*.html")
 	rG := r.Group("/tool")
+	rG.Use(gin.BasicAuth(conf.Auth))
 	rG.GET("/", func(ctx *gin.Context) {
 		file, _ := os.ReadFile("README.md")
 		md := goldmark.New(

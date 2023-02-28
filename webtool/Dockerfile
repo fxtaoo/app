@@ -8,7 +8,9 @@ RUN set -eux; \
 
 WORKDIR /app
 
-COPY . /app
+COPY templates  /app/templates
+COPY README.md /app/
+COPY main /app/
 
 EXPOSE 54328
 

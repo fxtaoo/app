@@ -16,14 +16,16 @@ import (
 )
 
 type V struct {
-	PE       float64
-	ROE      float64
-	Value    float64
-	Multiple float64
-	Money    float64
-	URL      string
-	Date     time.Time
-	Chan     chan struct{} `json:"-"`
+	PE            float64
+	ROE           float64
+	Value         float64
+	Multiple      float64
+	Money         float64
+	MultipleMoney float64
+	URL           string
+	Date          time.Time
+	Chan          chan struct{} `json:"-"`
+	First         bool
 }
 
 func (v *V) GetWebData() error {
@@ -71,7 +73,7 @@ func (v *V) GetWebData() error {
 	if v.Multiple < 0 {
 		v.Multiple = 0
 	}
-	v.Money = v.Money * v.Multiple
+	v.MultipleMoney = v.Money * v.Multiple
 	return nil
 }
 
@@ -79,7 +81,7 @@ func (v *V) Get(ctx *gin.Context) {
 	if ctx.Query("money") == "" {
 		ctx.String(200, "没有设置金额，请 URL 参数方式 ?money=xxx 添加，限整数。")
 	} else {
-		if v.Date.IsZero() || v.URL != ctx.Request.URL.String() {
+		if v.Date.IsZero() || v.URL != ctx.Request.URL.String() || v.First {
 			var err error
 			v.Money, err = strconv.ParseFloat(ctx.Query("money"), 64)
 			if err != nil {
@@ -90,6 +92,7 @@ func (v *V) Get(ctx *gin.Context) {
 					ctx.String(200, err.Error())
 				} else {
 					v.URL = ctx.Request.URL.String()
+					v.First = false
 					ctx.HTML(200, "voo.html", v)
 				}
 			}
@@ -104,6 +107,7 @@ func (v *V) Timing(conf *conf.Conf) {
 	// 定时运行
 	cron := cron.New()
 	cron.AddFunc(conf.Alert.CronVOO, func() {
+		v.First = true
 		oldDate := v.Date
 		v.GetWebData()
 		if v.Date != oldDate {

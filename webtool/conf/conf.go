@@ -11,6 +11,7 @@ type Conf struct {
 		Mails   []string `json:"mails"`
 		CronVOO string   `json:"cronvoo"`
 	} `json:"alert"`
+	Auth map[string]string `json:"auth"`
 }
 
 func (c *Conf) Init() error {
