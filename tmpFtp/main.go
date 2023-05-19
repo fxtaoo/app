@@ -47,23 +47,24 @@ func main() {
 		host, _ := host.Info()
 		ip, _ := gopsutilNet.Interfaces()
 
-		ipIndex := 0
 		// 默认为 linux
+		ipIndex := 0
 		switch host.OS {
-		case "windows":
+		case "windows", "darwin":
 			ipIndex = 1
 		}
 
 		for _, e := range ip {
-			address += fmt.Sprintf("\nhttp://%s:%d %s",
-				strings.Split(e.Addrs[ipIndex].Addr, "/")[0],
-				*port,
-				e.Name)
+			if len(e.Addrs) > 1 {
+				address += fmt.Sprintf("\nhttp://%s:%d %s",
+					strings.Split(e.Addrs[ipIndex].Addr, "/")[0],
+					*port,
+					e.Name)
+			}
 		}
 	}
 
 	fmt.Printf("\n%s\n\n", address)
 
 	r.Run(fmt.Sprintf("%s:%d", *ip, *port))
-
 }
