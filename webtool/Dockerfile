@@ -1,17 +1,17 @@
 FROM alpine:latest
 
-RUN set -eux; \
-    apk add ca-certificates tzdata \
-    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone \
-    && apk del tzdata
+RUN set -eux ; \
+    apk add ca-certificates tzdata && \
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ; \
+    echo "Asia/Shanghai" > /etc/timezone ; \
+    apk del tzdata
 
 WORKDIR /app
 
 COPY templates  /app/templates
 COPY README.md /app/
-COPY main /app/
+COPY webtool /app/
 
-EXPOSE 54328
+EXPOSE 20231
 
-CMD ["./main"]
+CMD ["./20231"]
